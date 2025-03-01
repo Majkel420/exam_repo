@@ -8,10 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import pl.coderslab.mystore.CheckoutPage;
-import pl.coderslab.mystore.LoginPage;
-import pl.coderslab.mystore.MainPage;
-import pl.coderslab.mystore.ProductDetailsPage;
+import pl.coderslab.mystore.*;
 
 import java.time.Duration;
 import java.util.List;
@@ -19,6 +16,10 @@ import java.util.List;
 public class MyStorePurchasingTest {
 
     private static WebDriver driver;
+    MainPage mainPage;
+    ProductDetailsPage productDetailsPage;
+    CheckoutPage checkoutPage;
+    OrderHistoryPage orderHistoryPage;
 
     @Before
     public void SetUp() {
@@ -29,29 +30,28 @@ public class MyStorePurchasingTest {
         driver.get("https://mystore-testlab.coderslab.pl/index.php?controller=authentication");
         LoginPage loginPage = new LoginPage(driver);
         loginPage.loginAs("nupdynuvxbtbqntbvq@nbmbb.com", "CorrectPassword!2137");
-
+        mainPage = new MainPage(driver);
+        productDetailsPage = new ProductDetailsPage(driver);
+        checkoutPage = new CheckoutPage(driver);
+        orderHistoryPage = new OrderHistoryPage(driver);
     }
 
     @After
     public void tearDown() {
-//        driver.quit();
+        driver.quit();
     }
 
     @Test
     public void TestPurchasingSweater(){
-        MainPage mainPage = new MainPage(driver);
+
         mainPage.setHummingbirdPrintedSweater();
-        ProductDetailsPage productDetailsPage = new ProductDetailsPage(driver);
         productDetailsPage.getDiscountPercentage();
         Assert.assertEquals("SAVE 20%",productDetailsPage.getDiscountPercentage());
-        //*Możliwy wybór między rozmiarami S,M,L,XL *
         productDetailsPage.chooseSize("M");
-        //*Możliwe wprowadzenie dowolnej ilości produktu*
-        productDetailsPage.chooseQuantity(5);
-          productDetailsPage.addToCard();
-          productDetailsPage.setProceedToCheckoutButton();
-          productDetailsPage.setProceedToCheckoutButton();
-        CheckoutPage checkoutPage = new CheckoutPage(driver);
+        productDetailsPage.chooseQuantity(6);
+        productDetailsPage.addToCard();
+        productDetailsPage.setProceedToCheckoutButton();
+        productDetailsPage.setProceedToCheckoutButton();
         checkoutPage.setAddressContinueButton();
         checkoutPage.setSelfPickUpOption();
         checkoutPage.setConfirmDeliveryOptionButton();
@@ -59,18 +59,16 @@ public class MyStorePurchasingTest {
         checkoutPage.setAcceptCondictionsTermsCheckMark();
         checkoutPage.setPlaceOrderButton();
         checkoutPage.getTotalPrice();
-        System.out.println(checkoutPage.getTotalPrice());
+        String orderTotalPrice = checkoutPage.getTotalPrice();
         checkoutPage.getOrderReference();
-        System.out.println(checkoutPage.getOrderReference());
+        String orderNum = checkoutPage.getOrderReference();
         checkoutPage.takeScreenshot("Order_number" + System.currentTimeMillis());
         mainPage.setUserAccount();
-        driver.findElement(By.id("history-link")).click();
-        WebElement table = driver.findElement(By.className("table-striped"));
-        List<WebElement> rows = table.findElements(By.tagName("tr"));
-        WebElement firstRow = rows.get(1);
-        String rawText = firstRow.getText();
-        System.out.println(rawText);
-        System.out.println("Test");
-        Assert.assertTrue(checkoutPage.getOrderReference(), rawText.contains(checkoutPage.getOrderReference()));
+        orderHistoryPage.setGoToOrderHistoryAndDetails();
+        String getFirstRowTable = orderHistoryPage.getFirstRowTable();
+        Assert.assertTrue("No order details in order history", getFirstRowTable.contains(orderNum)
+        && getFirstRowTable.contains(orderTotalPrice)
+        && getFirstRowTable.contains("Awaiting check payment"));
+
     }
 }
