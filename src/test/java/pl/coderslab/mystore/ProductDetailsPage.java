@@ -1,5 +1,6 @@
 package pl.coderslab.mystore;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -21,11 +22,14 @@ public class ProductDetailsPage {
     @FindBy(className = "add-to-cart")
     WebElement addToCartButton;
 
+    @FindBy(xpath = "//a[contains(text(),'Proceed to checkout')]")
+    WebElement proceedToCheckoutButton;
+
     public ProductDetailsPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
     }
 
-    public String GetDiscountPercentage(){
+    public String getDiscountPercentage(){
        return discountPercentage.getText().toUpperCase();
     }
 
@@ -35,12 +39,17 @@ public class ProductDetailsPage {
     }
     public void chooseQuantity(Integer quantity){
 //        quantityWanted.clear();
-//        quantityWanted.click();
+          quantityWanted.click();
           quantityWanted.clear();
+          quantityWanted.sendKeys(Keys.BACK_SPACE);
           quantityWanted.sendKeys(quantity.toString());
     }
     public void addToCard(){
         addToCartButton.click();
+    }
+
+    public void setProceedToCheckoutButton(){
+        proceedToCheckoutButton.click();
     }
 
 
